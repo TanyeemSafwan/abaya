@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+//cart
+Route::prefix('cart')->controller(CartController::class)->group(function () {
+    Route::get('view', 'view')->name('cart.view');
+    Route::post('store/{product}', 'store')->name('cart.store');
+    Route::patch('store/{product}', 'update')->name('cart.update');
+    Route::delete('store/{product}', 'delete')->name('cart.delete');
 });
 
 //admin routes
