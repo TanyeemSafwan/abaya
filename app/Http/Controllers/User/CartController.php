@@ -60,7 +60,7 @@ class CartController extends Controller
         } else {
             $cartItems = Cart::getCookieCartItems();
             $isProductExists = false;
-            foreach ($cartItems as $item) {
+            foreach ($cartItems as &$item) {
                 if ($item['product_id'] === $product->id) {
                     $item['quantity'] += $quantity;
                     $isProductExists = true;
