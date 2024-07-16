@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\ProductListController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AdminAuthController;
@@ -29,6 +30,11 @@ Route::prefix('cart')->controller(CartController::class)->group(function () {
     Route::post('store/{product}', 'store')->name('cart.store');
     Route::patch('store/{product}', 'update')->name('cart.update');
     Route::delete('store/{product}', 'delete')->name('cart.delete');
+});
+
+//productlist and filters
+Route::prefix('products')->controller(ProductListController::class)->group(function() {
+    Route::get('/', 'index')->name('products.index');
 });
 
 //admin routes

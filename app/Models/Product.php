@@ -68,8 +68,26 @@ class Product extends Model
         ->when(request('prices'), function(Builder $q)  {
             $q->whereBetween('price',[
                 request('prices.from',0),
-                request('prices.to', 100000),
+                request('prices.to', 30000),
             ]);
+        })
+        ->when(request('sort'), function(Builder $q) {
+            switch(request('sort')) {
+                case 'newest':
+                    $q->orderBy('created_at', 'desc');
+                    break;
+                case 'oldest':
+                    $q->orderBy('created_at', 'asc');
+                    break;
+                case 'price_asc':
+                    $q->orderBy('price', 'asc');
+                    break;
+                case 'price_desc':
+                    $q->orderBy('price', 'desc');
+                    break;
+                default:
+                    $q->orderBy('created_at', 'desc');
+            }
         });
         
     }
