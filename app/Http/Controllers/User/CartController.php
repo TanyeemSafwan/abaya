@@ -20,15 +20,13 @@ class CartController extends Controller
         if ($user) {
             $cartItems = CartItem::where('user_id', $user->id)->get();
             $userAddress = UserAddress::where('user_id', $user->id)->where('isMain', 1)->first();
-            if ($cartItems->count() > 0) {
-                return Inertia::render(
-                    'User/CartList',
-                    [
-                        'cartItems' => $cartItems,
-                        'userAddress' => $userAddress
-                    ]
-                );
-            } 
+            return Inertia::render(
+                'User/CartList',
+                [
+                    'cartItems' => $cartItems,
+                    'userAddress' => $userAddress
+                ]
+            );
             
         }
         else {
@@ -37,7 +35,7 @@ class CartController extends Controller
                 $cartItems = new CartResource(Cart::getProductsAndCartItems());
                 return  Inertia::render('User/CartList', ['cartItems' => $cartItems]);
             } else {
-                return redirect()->back();
+                return  Inertia::render('User/CartList');
             }
         }
     }

@@ -13,21 +13,21 @@ return new class extends Migration
     {
         Schema::create('user_addresses', function (Blueprint $table) {
             $table->id();
-            $table->string('type', 45);
+            $table->string('type', 45)->nullable();
             $table->string('address1', 255);
             $table->string('address2', 255)->nullable();
             $table->string('city', 255);
             $table->string('state', 45)->nullable();
-            $table->string('zipcode', 45);
+            $table->string('zipcode', 45)->nullable();
             $table->boolean('isMain')->default(1);
-            $table->string('country_code', 3);
+            $table->string('country_code', 3)->nullable();
             $table->foreignId('user_id')->references('id')->on('users');
            
             $table->timestamps();
         });
     }
 
-    /**
+    /**story , task_id, summary, moudule nam es 
      * Reverse the migrations.
      */
     public function down(): void

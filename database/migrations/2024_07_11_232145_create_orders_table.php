@@ -16,9 +16,12 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->decimal('total_price', 20, 2);
-            $table->string('status', 45);
-            $table->string('session_id', 255);
-            $table->foreignIdFor(UserAddress::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->string('status', 45)->default('Pending');
+            $table->string('session_id', 255)->nullable();
+            $table->foreignIdFor(UserAddress::class)->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
+            $table->string('phone', 30);
+            $table->string('name', 60);
+            $table->string('address_1', 255)->nullable();
             $table->foreignIdFor(User::class, 'created_by')->nullable();
             $table->foreignIdFor(User::class, 'updated_by')->nullable();
            

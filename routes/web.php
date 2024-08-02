@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\ProductListController;
 use App\Http\Controllers\User\CartController;
+use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +34,10 @@ Route::prefix('cart')->controller(CartController::class)->group(function () {
     Route::delete('store/{product}', 'delete')->name('cart.delete');
 });
 
+Route::prefix('checkout')->controller(CheckoutController::class)->group(function () {
+    Route::post('order', 'store')->name('checkout.store');
+});
+
 //productlist and filters
 Route::prefix('products')->controller(ProductListController::class)->group(function() {
     Route::get('/', 'index')->name('products.index');
@@ -53,6 +59,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function() {
     Route::put('/products/update/{id}', [ProductController::class, 'update'])->name('admin.products.update');
     Route::delete('/products/image/{id}', [ProductController::class, 'deleteImage'])->name('admin.products.image.delete');
     Route::delete('/products/destroy/{id}',[ProductController::class, 'destroy'])->name('admin.products.destroy');
+
+    Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::delete('/orders/delete/{id}',[OrderController::class, 'delete'])->name('admin.orders.delete');
 });
 
 require __DIR__.'/auth.php';
