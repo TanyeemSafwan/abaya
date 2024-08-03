@@ -100,7 +100,7 @@ class CheckoutController extends Controller
                 $order->phone = $request->address['phone'];
                 $order->address_1 = $request->address['address1'];
                 $order->name = $request->address['name'];
-                $order->name = $request->address['city'];
+                $order->city = $request->address['city'];
                 $order->save();
                 // $cartItems = CartItem::where([])
                 // foreach ($cartItems as )

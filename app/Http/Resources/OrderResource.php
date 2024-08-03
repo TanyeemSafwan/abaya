@@ -20,6 +20,7 @@ class OrderResource extends JsonResource
             'status' => $this->status,
             'phone' => $this->phone,
             'name' => $this->name,
+            'city' => $this->city,
             'address_1' => $this->address_1,
             'created_at' => $this->created_at->format('Y-m-d H:i:s')
         ];
