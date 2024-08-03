@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('session_id', 255)->nullable();
             $table->foreignIdFor(UserAddress::class)->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
             $table->string('phone', 30);
+            $table->string('city', 40)->default('Dhaka');
             $table->string('name', 60);
             $table->string('address_1', 255)->nullable();
             $table->foreignIdFor(User::class, 'created_by')->nullable();

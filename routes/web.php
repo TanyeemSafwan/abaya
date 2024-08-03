@@ -61,6 +61,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function() {
     Route::delete('/products/destroy/{id}',[ProductController::class, 'destroy'])->name('admin.products.destroy');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::put('/orders/update/{id}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('/orders/delete/{id}',[OrderController::class, 'delete'])->name('admin.orders.delete');
 });
 

@@ -58,6 +58,7 @@ class CheckoutController extends Controller
                 $order->phone = $request->address['phone'];
                 $order->name = $request->address['name'];
                 $order->address_1 = $request->address['address1'];
+                $order->address_1 = $request->address['city'];
                 $order->total_price = $request->total;
                 $order->created_by = $user->id;
                 // If a main address with isMain = 1 exists, set its id as customer_address_id
@@ -99,6 +100,7 @@ class CheckoutController extends Controller
                 $order->phone = $request->address['phone'];
                 $order->address_1 = $request->address['address1'];
                 $order->name = $request->address['name'];
+                $order->name = $request->address['city'];
                 $order->save();
                 // $cartItems = CartItem::where([])
                 // foreach ($cartItems as )
