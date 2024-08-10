@@ -15,9 +15,11 @@ use Inertia\Inertia;
 
 //user route 
 Route::get('/', [UserController::class, 'index'])->name('user.home');
+Route::get('/contact', [UserController::class, 'contact'])->name('user.contact');
+Route::get('/about', [UserController::class, 'about'])->name('user.about');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('User/Index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -41,6 +43,7 @@ Route::prefix('checkout')->controller(CheckoutController::class)->group(function
 //productlist and filters
 Route::prefix('products')->controller(ProductListController::class)->group(function() {
     Route::get('/', 'index')->name('products.index');
+    Route::get('/{id}', 'show')->name('products.show');
 });
 
 //admin routes

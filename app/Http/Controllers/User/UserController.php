@@ -21,4 +21,14 @@ class UserController extends Controller
             'phpVersion' => PHP_VERSION,
         ]);       
     }
+
+    public function contact()
+    {
+        return Inertia::render('User/Contact');
+    }
+
+    public function about()
+    {
+        return Inertia::render('User/About');
+    }
 }

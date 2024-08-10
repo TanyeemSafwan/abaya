@@ -22,8 +22,8 @@ import { router, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
   products: Array,
-  brands: Array,
-  categories: Array
+  brands: Object,
+  categories: Object
 });
 
 const sortOptions = [

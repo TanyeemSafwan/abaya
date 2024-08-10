@@ -8,6 +8,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductImage;
 use Inertia\Inertia;
 
 class ProductListController extends Controller
@@ -25,6 +26,22 @@ class ProductListController extends Controller
             'brands' => $brands,
             'categories' => $categories,
             'currentSort' => request('sort', 'newest')
+        ]);
+    }
+
+    public function show($id)
+    {
+        $product = Product::where('id', $id)->firstOrFail();
+        $productImages = ProductImage::where('product_id', $id)->get();
+
+        $category = Category::where('id', $product['category_id'])->firstOrFail();
+        $brand = Brand::where('id', $product['brand_id'])->firstOrFail();
+
+        return Inertia::render('User/ProductDetail', [
+            'product' => $product,
+            'productImages' => $productImages,
+            'category' => $category,
+            'brand' => $brand
         ]);
     }
 }
