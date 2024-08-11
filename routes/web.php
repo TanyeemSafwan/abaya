@@ -46,6 +46,12 @@ Route::prefix('products')->controller(ProductListController::class)->group(funct
     Route::get('/{id}', 'show')->name('products.show');
 });
 
+//user routes 
+
+Route::group(['middleware' => 'UserMiddleware'], function() {
+    Route::get('/history', [UserController::class, 'orderHistory'])->name('user.history');
+});
+
 //admin routes
 
 Route::group(['prefix' => 'admin', 'Middleware' => 'redirectAdmin'], function() {

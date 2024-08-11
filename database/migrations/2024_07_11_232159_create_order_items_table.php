@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('product_id')->references('id')->on('products')->nullable();
             $table->string('name')->default('none');
             $table->integer('quantity');
+            $table->integer('size');
             $table->decimal('unit_price');
             $table->timestamps();
         });

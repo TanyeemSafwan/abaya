@@ -1,8 +1,12 @@
 <script setup>
+import { Head } from '@inertiajs/vue3';
 import UserLayout from './Layouts/UserLayout.vue'
 </script>
 
 <template>
+  <Head>
+    <title>{{ 'Contact | Abaya' }}</title>
+</Head>
   <UserLayout>
     <section class="text-gray-600 body-font relative">
   <div class="container px-5 py-24 mx-auto flex sm:flex-nowrap flex-wrap">

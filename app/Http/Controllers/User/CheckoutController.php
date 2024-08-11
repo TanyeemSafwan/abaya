@@ -22,7 +22,6 @@ class CheckoutController extends Controller
         $user = $request->user();
         $carts = $request->carts;
         $products = $request->products;
-
         $mergedData = [];
 
         // Loop through the "carts" array and merge with "products" data
@@ -60,18 +59,21 @@ class CheckoutController extends Controller
                 $order->address_1 = $request->address['address1'];
                 $order->address_1 = $request->address['city'];
                 $order->total_price = $request->total;
+                $order->specialInstructions = $request->address['specialInstructions'];
                 $order->created_by = $user->id;
                 // If a main address with isMain = 1 exists, set its id as customer_address_id
                 $order->user_address_id = $mainAddress->id;
                 $order->save();
                 foreach ($cartItems as $cartItem) {
                     $specificProduct = Product::where('id', $cartItem['product_id'])->first();
+                    $itemIndex = array_search($cartItem['product_id'], array_column($request->productSizes, 'productId'));
                     OrderItem::create([
                         'order_id' => $order->id, // Assuming you have an 'id' field in your orders table
                         'product_id' => $cartItem->product_id,
                         'name' => $specificProduct->title,
                         'quantity' => $cartItem->quantity,
                         'unit_price' => $cartItem->product->price, // You may adjust this depending on your logic
+                        'size' => $request->productSizes[$itemIndex]['size']
                     ]);
                 $cartItem->delete();
                 //remove cart items from cookies
@@ -106,12 +108,14 @@ class CheckoutController extends Controller
                 // foreach ($cartItems as )
                 foreach ($carts as $cart) {
                     $specificProduct = Product::where('id', $cart['product_id'])->first();
+                    $itemIndex = array_search($cart['product_id'], array_column($request->productSizes, 'productId'));
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $cart['product_id'],
                         'name' => $specificProduct->title,
                         'quantity' => $cart['quantity'],
-                        'unit_price' => $cart['price']
+                        'unit_price' => $cart['price'],
+                        'size' => $request->productSizes[$itemIndex]['size']
                     ]);
                 }
                 Cart::setCookieCartItems([]);

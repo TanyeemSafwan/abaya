@@ -1,8 +1,12 @@
 <script setup>
 import UserLayout from './Layouts/UserLayout.vue'
+import { Head } from '@inertiajs/vue3';
 </script>
 
 <template>
+    <Head>
+    <title>{{ 'About | Abaya' }}</title>
+</Head>
 <UserLayout>
   <section class="">
     <div class="py-12 bg-white">

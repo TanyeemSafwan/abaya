@@ -18,6 +18,8 @@ const user_address_id = ref('');
 const phone = ref('');
 const name = ref('');
 const address_1 = ref('');
+const size = ref('');
+const specialInstructions = ref('');
 const dialogVisible = ref(false);
 
 
@@ -54,7 +56,6 @@ const openEditModal = async (order) => {
     address_1.value = order.address_1;
 
     productsOrdered.value = props.orderItems.filter((value) => value.order_id === order.id);
-    console.log(productsOrdered.value);
     
 }
 
@@ -179,7 +180,7 @@ const deleteOrder = (order, index) => {
             <div class="grid md:grid-cols-2 md:gap-6 mb-5">
                 <div class="relative z-0 w-full mb-6 group">
                     <div v-for="product in productsOrdered" :key="product.id">
-                        {{ product.name }}: {{ product.quantity }}items
+                        {{ product.name }}: {{ product.quantity }}items -- {{ product.size }} size
                     </div>
                 </div>
             </div>
