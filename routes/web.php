@@ -9,6 +9,7 @@ use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,6 +18,7 @@ use Inertia\Inertia;
 Route::get('/', [UserController::class, 'index'])->name('user.home');
 Route::get('/contact', [UserController::class, 'contact'])->name('user.contact');
 Route::get('/about', [UserController::class, 'about'])->name('user.about');
+Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 Route::get('/dashboard', function () {
     return Inertia::render('User/Index');

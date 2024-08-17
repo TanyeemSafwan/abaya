@@ -1,49 +1,78 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import UserLayout from './Layouts/UserLayout.vue'
+import { ref } from 'vue';
+
+const name = ref('');
+const email = ref('');
+const message = ref('');
+
+const submitForm = () => {
+  // Handle form submission logic here
+  console.log('Form submitted:', { name: name.value, email: email.value, message: message.value });
+};
 </script>
 
 <template>
   <Head>
-    <title>{{ 'Contact | Abaya' }}</title>
-</Head>
+    <title>Contact | Abaya</title>
+  </Head>
   <UserLayout>
-    <section class="text-gray-600 body-font relative">
-  <div class="container px-5 py-24 mx-auto flex sm:flex-nowrap flex-wrap">
-    <div class="lg:w-2/3 md:w-1/2 bg-gray-300 rounded-lg overflow-hidden sm:mr-10 p-10 flex items-end justify-start relative">
-      <iframe width="100%" height="100%" class="absolute inset-0" frameborder="0" title="map" marginheight="0" marginwidth="0" scrolling="no" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2367.834585319296!2d90.43882349875665!3d23.75807859854222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b94fae9ffe29%3A0x4ce2c6c6e299413!2sDakhin%20Banasree%20Dhaka!5e0!3m2!1sen!2sbd!4v1723262129173!5m2!1sen!2sbd"></iframe>
-      <div class="bg-white relative flex flex-wrap py-6 rounded shadow-md">
-        <div class="lg:w-1/2 px-6">
-          <h2 class="title-font font-semibold text-gray-900 tracking-widest text-xs">ADDRESS</h2>
-          <p class="mt-1">House no 20, Road no 4, Block C,South Banasree, Dhaka 1219 1219 Dhaka, Dhaka Division, Bangladesh</p>
-        </div>
-        <div class="lg:w-1/2 px-6 mt-4 lg:mt-0">
-          <h2 class="title-font font-semibold text-gray-900 tracking-widest text-xs">EMAIL</h2>
-          <a class="text-indigo-500 leading-relaxed">example@email.com</a>
-          <h2 class="title-font font-semibold text-gray-900 tracking-widest text-xs mt-4">PHONE</h2>
-          <p class="leading-relaxed">01300-722027</p>
+    <div class="bg-gradient-to-br from-gray-900 to-black min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <h1 class="text-4xl font-extrabold text-white text-center mb-12">Contact Us</h1>
+        
+        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2">
+            <!-- Map and Contact Info Section -->
+            <div class="p-8 bg-gradient-to-br from-green-600 to-green-800 text-white">
+              <h2 class="text-2xl font-bold mb-6">Our Location</h2>
+              <div class="aspect-w-16 aspect-h-9 mb-8">
+                <iframe class="rounded-xl shadow-lg" width="100%" height="100%" frameborder="0" style="border:0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2367.834585319296!2d90.43882349875665!3d23.75807859854222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b94fae9ffe29%3A0x4ce2c6c6e299413!2sDakhin%20Banasree%20Dhaka!5e0!3m2!1sen!2sbd!4v1723262129173!5m2!1sen!2sbd" allowfullscreen></iframe>
+              </div>
+              <div class="space-y-4">
+                <div class="flex items-start">
+                  <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  <p>House no 20, Road no 4, Block C, South Banasree, Dhaka 1219, Bangladesh</p>
+                </div>
+                <div class="flex items-center">
+                  <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                  <a href="mailto:example@email.com" class="hover:underline">example@email.com</a>
+                </div>
+                <div class="flex items-center">
+                  <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                  <p>01300-722027</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Form Section -->
+            <div class="p-8 bg-white">
+              <h2 class="text-3xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+              <form @submit.prevent="submitForm" class="space-y-6">
+                <div>
+                  <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                  <input v-model="name" type="text" id="name" name="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                  <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                  <input v-model="email" type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                  <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                  <textarea v-model="message" id="message" name="message" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"></textarea>
+                </div>
+                <div>
+                  <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Send Message
+                  </button>
+                </div>
+              </form>
+              <p class="mt-4 text-sm text-gray-500 text-center">Your insights help us create the best shopping experience.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="lg:w-1/3 md:w-1/2 bg-white flex flex-col md:ml-auto w-full md:py-8 mt-8 md:mt-0">
-      <h2 class="text-gray-900 text-lg mb-1 font-medium title-font">Feedback</h2>
-      <p class="leading-relaxed mb-5 text-gray-600">Your Thoughts Shape Our Journey</p>
-      <div class="relative mb-4">
-        <label for="name" class="leading-7 text-sm text-gray-600">Name</label>
-        <input type="text" id="name" name="name" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
-      </div>
-      <div class="relative mb-4">
-        <label for="email" class="leading-7 text-sm text-gray-600">Email</label>
-        <input type="email" id="email" name="email" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
-      </div>
-      <div class="relative mb-4">
-        <label for="message" class="leading-7 text-sm text-gray-600">Message</label>
-        <textarea id="message" name="message" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
-      </div>
-      <button class="text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">Submit</button>
-      <p class="text-xs text-gray-500 mt-3">Your insights help us create the best shopping experience.</p>
-    </div>
-  </div>
-</section>
   </UserLayout>
 </template>

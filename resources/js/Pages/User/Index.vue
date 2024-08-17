@@ -12,71 +12,110 @@ onMounted(() => {
 defineProps({
   products: Array
 })
+
+const customers = [
+  'Mareya Akther',
+  'Eva Khondokar',
+  'Happy Customter'
+];
 </script>
 
 <template>
   <Head>
-    <title>{{ 'Home | Abaya' }}</title>
-</Head>
+    <title>Home | Abaya</title>
+  </Head>
   <UserLayout>
     <!-- Hero Section -->
-    <div class="bg-gradient-to-b from-emerald-50 via-emerald-100 to-white">
-      <section class="py-16 sm:py-24 lg:py-32">
-        <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div class="grid items-center grid-cols-1 gap-12 lg:grid-cols-2">
-            <div class="space-y-8">
-              <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl leading-tight">
-                Elegance gracefully folded, with classic
-                <span class="relative inline-block">
-                  <span class="absolute inset-x-0 bottom-0 h-3 bg-emerald-400"></span>
-                  <span class="relative">Abaya</span>
-                </span>
-              </h1>
+    <section class="relative bg-gray-900 text-white">
+  <div class="absolute inset-0 bg-center bg-cover bg-no-repeat" 
+       style="background-image: url('/application_images/abaya-background.jpg');">
+  </div>
+  <div class="absolute inset-0 bg-black opacity-60"></div>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 sm:py-48 lg:py-56">
+        <h1 class="text-4xl font-extrabold sm:text-5xl lg:text-6xl leading-tight mb-6">
+          Elegance Redefined: <br>
+          <span class="text-emerald-400">Your Perfect Abaya</span>
+        </h1>
+        <p class="text-xl max-w-3xl mb-8">
+          Discover our collection of exquisite abayas, where timeless tradition meets modern sophistication.
+        </p>
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <Link :href="route('products.index')"
+            class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 transition duration-150 ease-in-out">
+            Shop Now
+          </Link>
+          <a href="#featured" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-emerald-300 bg-gray-800 hover:bg-gray-700 transition duration-150 ease-in-out">
+            Explore Collection
+          </a>
+        </div>
+      </div>
+    </section>
 
-              <p class="text-lg text-gray-700 sm:text-xl">
-                Each stitch reflects timeless tradition, where modesty meets sophistication. The Abaya is more than attire—it's an expression of grace, crafted for the modern woman who values both heritage and style.
-              </p>
-
-              <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
-                <Link :href="route('products.index')"
-                  class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-emerald-600 rounded-md shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out">
-                  Start exploring
-                </Link>
-
-                <a href="https://www.facebook.com/abayadubaibd" target="_blank"
-                  class="inline-flex items-center text-base font-medium text-emerald-600 hover:text-emerald-800 transition duration-150 ease-in-out">
-                  <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" />
-                  </svg>
-                  Visit Our Facebook Page
-                </a>
-              </div>
-            </div>
-
-            <div class="relative">
-              <img class="w-full rounded-lg shadow-2xl" src="/application_images/abaya_logo.png" alt="Elegant Abaya" />
-              <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500 to-transparent opacity-20 rounded-lg"></div>
+    <!-- Featured Categories -->
+    <section id="featured" class="bg-gray-100 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Categories</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div v-for="category in ['Classic Abayas', 'Embroidered Designs', 'Modern Cuts']" :key="category" class="relative group overflow-hidden rounded-lg shadow-lg">
+            <img :src="`/application_images/${category.toLowerCase().replace(' ', '-')}.jpg`" :alt="category" class="w-full h-64 object-cover transition duration-300 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+            <div class="absolute bottom-0 left-0 p-6">
+              <h3 class="text-xl font-semibold text-white mb-2">{{ category }}</h3>
+              <Link :href="route('products.index')" class="text-sm text-emerald-300 group-hover:text-emerald-400 transition duration-150 ease-in-out">
+                Shop Now &rarr;
+              </Link>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
 
     <!-- Latest Products Section -->
-    <div class="bg-white">
-      <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 mb-8">Latest Products</h2>
-
+    <section class="bg-white py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Products</h2>
         <Products :products="products" />
-
         <div class="flex justify-center mt-12">
           <Link :href="route('products.index')"
-            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out">
+            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 transition duration-150 ease-in-out">
             View All Products
           </Link>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="bg-gray-900 text-white py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold mb-12 text-center">What Our Customers Say</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div v-for="(testimonial, index) in ['মাশাল্লাহ আপু খুব সুন্দর বোরকা। এক দম সেম টু সেম। ইন্শাল্লাহ অবারও  নিতে পারি।', 'অনেক অনেক ধন্যবাদ আপু, মাশাল্লাহ! অনেক সুন্দর হয়েছে বোরখা।', 'আলহামদুলিল্লাহ প্রোডাক্ট পেয়েছি। দাম অনুযায়ী কাপড়ের কোয়ালিটি মোটামুটি ভালো। স্যাটিসফাইড। ধন্যবাদ।']" :key="testimonial" class="bg-gray-800 p-6 rounded-lg">
+            <p class="text-lg mb-4">{{ testimonial }}</p>
+            <div class="flex items-center">
+              <img src="/application_images/avatar-placeholder.jpg" alt="Customer" class="w-10 h-10 rounded-full mr-4">
+              <div>
+                <p class="font-semibold">{{ customers[index] }}</p>
+                <p class="text-emerald-400 text-sm">Verified Buyer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="bg-emerald-600 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">Stay Updated</h2>
+        <p class="text-emerald-100 mb-8 max-w-2xl mx-auto">Subscribe to our newsletter for exclusive offers, new arrivals, and styling tips.</p>
+        <form class="max-w-md mx-auto flex">
+          <input type="email" placeholder="Enter your email" class="flex-grow px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-white">
+          <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-r-md hover:bg-gray-800 transition duration-150 ease-in-out">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </section>
   </UserLayout>
 </template>
 
