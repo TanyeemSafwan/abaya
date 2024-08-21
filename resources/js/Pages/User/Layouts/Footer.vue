@@ -16,7 +16,7 @@ import { Link } from '@inertiajs/vue3';
             <li><Link :href="route('user.home')" class="text-gray-400 hover:text-emerald-400 transition duration-150 ease-in-out">Home</Link></li>
             <li><Link :href="route('products.index')" class="text-gray-400 hover:text-emerald-400 transition duration-150 ease-in-out">Shop</Link></li>
             <li><Link :href="route('user.about')" class="text-gray-400 hover:text-emerald-400 transition duration-150 ease-in-out">About Us</Link></li>
-            <li><Link :href="route('user.contact')" class="text-gray-400 hover:text-emerald-400 transition duration-150 ease-in-out">Contact</Link></li>
+            <li><Link :href="route('contact.index')" class="text-gray-400 hover:text-emerald-400 transition duration-150 ease-in-out">Contact</Link></li>
           </ul>
         </div>
         <div>

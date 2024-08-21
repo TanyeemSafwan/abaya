@@ -1,7 +1,7 @@
 <script setup>
 import UserLayout from './Layouts/UserLayout.vue'
-import { ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { inject, ref } from 'vue';
+import { Head, router } from '@inertiajs/vue3';
 
 const props = defineProps({
   product: Object,
@@ -9,6 +9,27 @@ const props = defineProps({
   brand: Object,
   category: Object
 });
+
+
+const $swal = inject('$swal');
+
+const addToCart = (product) => {
+  router.post(route('cart.store', product), {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: (page) => {
+      if (page.props.flash.success) {
+        $swal.fire({
+          toast: true,
+          icon: 'success',
+          position: 'top-end',
+          showConfirmationButton: false,
+          title: page.props.flash.success
+        })
+      }
+    }
+  })
+}
 
 const activeImage = ref(`/${props.productImages[0]?.image ? props.productImages[0].image : 'no-image-available.jpg'}`);
 </script>
@@ -51,7 +72,7 @@ const activeImage = ref(`/${props.productImages[0]?.image ? props.productImages[
                   <p class="text-gray-600">{{ product.description }}</p>
                 </div>
               </div>
-              <button type="button" class="w-full px-6 py-4 bg-indigo-600 text-white rounded-xl text-lg font-semibold transition-colors duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              <button @click="addToCart(product)" type="button" class="w-full px-6 py-4 bg-indigo-600 text-white rounded-xl text-lg font-semibold transition-colors duration-300 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Add to Cart
               </button>
             </div>

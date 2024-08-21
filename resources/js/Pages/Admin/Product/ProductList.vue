@@ -1,21 +1,28 @@
 <script setup>
+import { ref, computed, onMounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import VueSweetalert2 from 'vue-sweetalert2';
-import { inject } from 'vue';
-import { Plus } from '@element-plus/icons-vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import debounce from 'lodash/debounce';
 
-defineProps({
-    products: Array
-})
+const props = defineProps({
+    products: Array,
+    brands: Array,
+    categories: Array,
+});
 
-const brands = usePage().props.brands;
-const categories = usePage().props.categories;
+const page = usePage();
+const currentPage = ref(1);
+const pageSize = ref(10);
+const searchQuery = ref('');
+const selectedCategory = ref('');
+const selectedBrand = ref('');
+const sortBy = ref('title');
+const sortOrder = ref('asc');
+
 const isAddProduct = ref(false);
 const editMode = ref(false);
 const dialogVisible = ref(false);
 const dialogImageUrl = ref('');
-
 
 const id = ref('');
 const title = ref('');
@@ -23,14 +30,59 @@ const price = ref('');
 const quantity = ref('');
 const description = ref('');
 const product_images = ref([]);
-const published = ref('');
+const published = ref(false);
 const category_id = ref('');
 const brand_id = ref('');
-const inStock = ref('');
+const inStock = ref(true);
 
 const productImages = ref([]);
 
-const $swal = inject('$swal');
+const filteredProducts = computed(() => {
+    let result = props.products;
+
+    if (searchQuery.value) {
+        result = result.filter(product => 
+            product.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+        );
+    }
+
+    if (selectedCategory.value) {
+        result = result.filter(product => product.category_id === selectedCategory.value);
+    }
+
+    if (selectedBrand.value) {
+        result = result.filter(product => product.brand_id === selectedBrand.value);
+    }
+
+    result.sort((a, b) => {
+        if (a[sortBy.value] < b[sortBy.value]) return sortOrder.value === 'asc' ? -1 : 1;
+        if (a[sortBy.value] > b[sortBy.value]) return sortOrder.value === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    return result;
+});
+
+const paginatedProducts = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    return filteredProducts.value.slice(start, end);
+});
+
+const totalPages = computed(() => Math.ceil(filteredProducts.value.length / pageSize.value));
+
+const handleSearch = debounce(() => {
+    currentPage.value = 1;
+}, 300);
+
+const handleSort = (column) => {
+    if (sortBy.value === column) {
+        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortBy.value = column;
+        sortOrder.value = 'asc';
+    }
+};
 
 const handleFileChange = (file) => {
     productImages.value.push(file);
@@ -45,11 +97,11 @@ const handleRemove = (uploadFile) => {
     console.log(uploadFile);
 }
 
-
 const openAddModal = () => {
     isAddProduct.value = true;
     dialogVisible.value = true;
     editMode.value = false;
+    resetFormData();
 }
 
 const openEditModal = (product) => {
@@ -65,6 +117,8 @@ const openEditModal = (product) => {
     brand_id.value = product.brand_id;
     category_id.value = product.category_id;
     product_images.value = product.product_images;
+    published.value = product.published;
+    inStock.value = product.inStock;
 }
 
 const resetFormData = () => {
@@ -75,6 +129,10 @@ const resetFormData = () => {
     description.value = '';
     productImages.value = [];
     dialogImageUrl.value = '';
+    category_id.value = '';
+    brand_id.value = '';
+    published.value = false;
+    inStock.value = true;
 }
 
 const addProduct = async () => {
@@ -85,21 +143,20 @@ const addProduct = async () => {
     formData.append('description', description.value);
     formData.append('brand_id', brand_id.value);
     formData.append('category_id', category_id.value);
+    formData.append('published', published.value);
+    formData.append('inStock', inStock.value);
 
     for (const image of productImages.value) {
         formData.append('product_images[]', image.raw);
     }
 
     try {
-        await router.post('products/store', formData, {
+        await router.post('/admin/products/store', formData, {
             onSuccess: page => {
-                $swal.fire({
-                    toast: true,
-                    icon: 'success',
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    title: page.props.flash.success
-                })
+                ElMessage({
+                    type: 'success',
+                    message: page.props.flash.success
+                });
                 dialogVisible.value = false;
                 resetFormData();
             }
@@ -114,17 +171,14 @@ const deleteImage = async (pimage, index) => {
         await router.delete('/admin/products/image/' + pimage.id, {
             onSuccess: (page) => {
                 product_images.value.splice(index, 1);
-                $swal.fire({
-                    toast: true,
-                    icon: "success",
-                    position: "top-end",
-                    showConfirmButton: false,
-                    title: page.props.flash.success
+                ElMessage({
+                    type: 'success',
+                    message: page.props.flash.success
                 });
             }
         })
-    }catch(error) {
-
+    } catch(error) {
+        console.error(error);
     }
 };
 
@@ -136,6 +190,8 @@ const updateProduct = async () => {
     formData.append('description', description.value);
     formData.append('category_id', category_id.value);
     formData.append('brand_id', brand_id.value);
+    formData.append('published', published.value);
+    formData.append('inStock', inStock.value);
     formData.append('_method', 'PUT');
 
     for (const image of productImages.value) {
@@ -143,392 +199,501 @@ const updateProduct = async () => {
     }
 
     try {
-        await router.post('products/update/' + id.value, formData, {
+        await router.post('/admin/products/update/' + id.value, formData, {
             onSuccess: (page) => {
                 dialogVisible.value = false;
                 resetFormData();
-                $swal.fire({
-                    toast: true,
-                    icon: "success",
-                    position: "top-end",
-                    showConfirmButton: false,
-                    title: page.props.flash.success
+                ElMessage({
+                    type: 'success',
+                    message: page.props.flash.success
                 });
             }
         })
-    }catch(err) {
-
+    } catch(err) {
+        console.error(err);
     }
-
 };
 
-const deleteProduct = (product, index) => {
-    $swal.fire({
-        title: 'Are you Sure',
-        text: "This actions cannot undo!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        cancelButtonText: 'no',
-        confirmButtonText: 'yes, delete!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            try {
-                router.delete('products/destroy/' + product.id, {
-                    onSuccess: (page) => {
-                        $swal.fire({
-                            toast: true,
-                            icon: "success",
-                            position: "top-end",
-                            showConfirmButton: false,
-                            title: page.props.flash.success
-                        });
-                    }
-                })
-            } catch (err) {
-                console.log(err)
-            }
+const deleteProduct = (product) => {
+    ElMessageBox.confirm(
+        'Are you sure you want to delete this product?',
+        'Warning',
+        {
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Cancel',
+            type: 'warning',
         }
-    })
+    )
+        .then(() => {
+            router.delete('/admin/products/destroy/' + product.id, {
+                onSuccess: (page) => {
+                    ElMessage({
+                        type: 'success',
+                        message: page.props.flash.success
+                    });
+                }
+            });
+        })
+        .catch(() => {
+            ElMessage({
+                type: 'info',
+                message: 'Deletion canceled'
+            });
+        });
 }
+
+onMounted(() => {
+    // Any initialization logic can go here
+});
 </script>
 
 <template>
-    <el-dialog v-model="dialogVisible" :title="editMode ? 'Edit Product' : 'Add Product'" width="30%"
-        :before-close="handleClose">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Product List</h1>
 
-
-        <form class="max-w-md mx-auto" @submit.prevent="editMode ? updateProduct() : addProduct()">
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model=title type="text" name="floating_title" id="floating_title"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_email"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Title</label>
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model="price" type="text" name="floating_price" id="floating_price"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_price"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Price</label>
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model="quantity" type="number" name="quantity" id="floating_quantity"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_quantity"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Quantity</label>
-            </div>
-
-
-            <form class="max-w-sm mb-4">
-                <label for="categories" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select
-                    Category</label>
-                <select id="categories" v-model="category_id"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}
+        <!-- Filters and Search -->
+        <div class="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                <input
+                    v-model="searchQuery"
+                    @input="handleSearch"
+                    type="text"
+                    placeholder="Search products..."
+                    class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+                />
+                <select
+                    v-model="selectedCategory"
+                    class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+                >
+                    <option value="">All Categories</option>
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                        {{ category.name }}
                     </option>
                 </select>
-            </form>
-
-            <form class="max-w-sm">
-                <label for="brands" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select
-                    Brand</label>
-                <select id="brands" v-model="brand_id"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
+                <select
+                    v-model="selectedBrand"
+                    class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+                >
+                    <option value="">All Brands</option>
+                    <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                        {{ brand.name }}
+                    </option>
                 </select>
-            </form>
-
-            <div class="grid md:grid-cols-2 md:gap-6 mb-5">
-                <div class="relative z-0 w-full mb-6 group">
-                    <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your
-                        message</label>
-                    <textarea id="message" rows="4" v-model="description"
-                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Leave a comment..."></textarea>
-                </div>
             </div>
-            <div class="grid md:gap-6">
-            <div class="relative z-0 w=full mb-6 group">
-                <el-upload v-model:file-list="productImages" list-type="picture-card" multiple
-                    :on-preview="handlePictureCardPreview" :on-remove="handleRemove" :on-change="handleFileChange">
-                    <el-icon>
-                        <Plus />
-                    </el-icon>
-                </el-upload>
+            <button
+                @click="openAddModal"
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300 w-full sm:w-auto mt-4 sm:mt-0"
+            >
+                Add Product
+            </button>
+        </div>
 
+        <!-- Product Table -->
+        <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+            <table class="w-full table-auto">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th
+                            v-for="column in ['Title', 'Category', 'Brand', 'Quantity', 'Price', 'Stock', 'Published', 'Actions']"
+                            :key="column"
+                            @click="handleSort(column.toLowerCase())"
+                            class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        >
+                            {{ column }}
+                            <span v-if="sortBy === column.toLowerCase()">
+                                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="product in paginatedProducts" :key="product.id">
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">{{ product.title }}</td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">{{ product.category.name }}</td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">{{ product.brand.name }}</td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">{{ product.quantity }}</td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">${{ Number(product.price).toFixed(2) }}</td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                            <span
+                                :class="[
+                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                    product.inStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                ]"
+                            >
+                                {{ !product.inStock ? 'In Stock' : 'Out of Stock' }}
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                            <span
+                                :class="[
+                                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                    product.published ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                                ]"
+                            >
+                                {{ !product.published ? 'Published' : 'Draft' }}
+                            </span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                                @click="openEditModal(product)"
+                                class="text-indigo-600 hover:text-indigo-900 mr-2"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                @click="deleteProduct(product)"
+                                class="text-red-600 hover:text-red-900"
+                            >
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 flex flex-col sm:flex-row items-center justify-between">
+            <div class="mb-4 sm:mb-0">
+                <p class="text-sm text-gray-700">
+                    Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredProducts.length) }} of {{ filteredProducts.length }} results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                        @click="currentPage--"
+                        :disabled="currentPage === 1"
+                        class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                    >
+                        Previous
+                    </button>
+                    <button
+                        v-for="page in totalPages"
+                        :key="page"
+                        @click="currentPage = page"
+                        :class="[
+                            'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                            currentPage === page
+                                ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        ]"
+                    >
+                        {{ page }}
+                    </button>
+                    <button
+                        @click="currentPage++"
+                        :disabled="currentPage === totalPages"
+                        class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                    >
+                        Next
+                    </button>
+                </nav>
             </div>
         </div>
 
-            <div class="flex flex-nowrap mb-8 ">
-                    <div v-for="(pimage, index) in product_images" :key="pimage.id" class="relative w-32 h-32 ">
-                        <img class="w-24 h-20 rounded" :src="`/${pimage.image}`" alt="">
-                        <span
-                            class="absolute top-0 right-8 transform -translate-y-1/2 w-3.5 h-3.5 bg-red-400 border-2 border-white dark:border-gray-800 rounded-full">
-                            <span @click="deleteImage(pimage, index)"
-                                class="text-white text-xs font-bold absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hover:cursor-pointer">x</span>
-                        </span>
-                    </div>
-            </div>
+        <!-- Add/Edit Product Modal -->
+        <el-dialog v-model="dialogVisible" :title="editMode ? 'Edit Product' : 'Add Product'" width="90%" custom-class="wp-premium-dialog">
+            <form @submit.prevent="editMode ? updateProduct() : addProduct()" class="wp-premium-form">
+                <div class="wp-premium-form-grid">
+                    <div class="wp-premium-form-col">
+                        <div class="wp-premium-form-group">
+                            <label for="title" class="wp-premium-label">Title</label>
+                            <input v-model="title" type="text" id="title" name="title" required class="wp-premium-input">
+                        </div>
 
-            <button type="submit"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-        </form>
+                        <div class="wp-premium-form-group">
+                            <label for="price" class="wp-premium-label">Price</label>
+                            <input v-model="price" type="number" step="0.01" id="price" name="price" required class="wp-premium-input">
+                        </div>
 
-    </el-dialog>
-    <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-        <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-            <!-- Start coding here -->
-            <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
-                <div
-                    class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
-                    <div class="w-full md:w-1/2">
-                        <form class="flex items-center">
-                            <label for="simple-search" class="sr-only">Search</label>
-                            <div class="relative w-full">
-                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400"
-                                        fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill-rule="evenodd"
-                                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <input type="text" id="simple-search"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    placeholder="Search" required="">
-                            </div>
-                        </form>
+                        <div class="wp-premium-form-group">
+                            <label for="quantity" class="wp-premium-label">Quantity</label>
+                            <input v-model="quantity" type="number" id="quantity" name="quantity" required class="wp-premium-input">
+                        </div>
+
+                        <div class="wp-premium-form-group">
+                            <label for="category" class="wp-premium-label">Category</label>
+                            <select v-model="category_id" id="category" name="category" required class="wp-premium-select">
+                                <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+                            </select>
+                        </div>
+
+                        <div class="wp-premium-form-group">
+                            <label for="brand" class="wp-premium-label">Brand</label>
+                            <select v-model="brand_id" id="brand" name="brand" required class="wp-premium-select">
+                                <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
+                            </select>
+                        </div>
                     </div>
-                    <div
-                        class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-                        <button type="button" @click="openAddModal"
-                            class="flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path clip-rule="evenodd" fill-rule="evenodd"
-                                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-                            </svg>
-                            Add product
-                        </button>
-                        <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button id="actionsDropdownButton" data-dropdown-toggle="actionsDropdown"
-                                class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                type="button">
-                                <svg class="-ml-1 mr-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clip-rule="evenodd" fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                </svg>
-                                Actions
-                            </button>
-                            <div id="actionsDropdown"
-                                class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                                <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                    aria-labelledby="actionsDropdownButton">
-                                    <li>
-                                        <a href="#"
-                                            class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass
-                                            Edit</a>
-                                    </li>
-                                </ul>
-                                <div class="py-1">
-                                    <a href="#"
-                                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete
-                                        all</a>
-                                </div>
+
+                    <div class="wp-premium-form-col">
+                        <div class="wp-premium-form-group">
+                            <label for="description" class="wp-premium-label">Description</label>
+                            <textarea v-model="description" id="description" name="description" rows="5" class="wp-premium-textarea"></textarea>
+                        </div>
+
+                        <div class="wp-premium-form-group">
+                            <label class="wp-premium-label">Status</label>
+                            <div class="wp-premium-checkbox-group">
+                                <label class="wp-premium-checkbox">
+                                    <input v-model="published" type="checkbox">
+                                    <span class="checkmark"></span>
+                                    Published
+                                </label>
+                                <label class="wp-premium-checkbox">
+                                    <input v-model="inStock" type="checkbox">
+                                    <span class="checkmark"></span>
+                                    In Stock
+                                </label>
                             </div>
-                            <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                                class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                                    class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Filter
-                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clip-rule="evenodd" fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                </svg>
-                            </button>
-                            <div id="filterDropdown"
-                                class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose brand</h6>
-                                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                    <li class="flex items-center">
-                                        <input id="apple" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="apple"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Apple
-                                            (56)</label>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input id="fitbit" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="fitbit"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Microsoft
-                                            (16)</label>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input id="razor" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="razor"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Razor
-                                            (49)</label>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input id="nikon" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="nikon"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Nikon
-                                            (12)</label>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <input id="benq" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="benq"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">BenQ
-                                            (74)</label>
-                                    </li>
-                                </ul>
+                        </div>
+
+                        <div class="wp-premium-form-group">
+                            <label class="wp-premium-label">Product Images</label>
+                            <el-upload
+                                v-model:file-list="productImages"
+                                action="#"
+                                list-type="picture-card"
+                                :auto-upload="false"
+                                :on-change="handleFileChange"
+                                class="wp-premium-upload"
+                            >
+                                <i class="el-icon-plus"></i>
+                            </el-upload>
+                        </div>
+
+                        <div v-if="editMode" class="wp-premium-form-group">
+                            <label class="wp-premium-label">Existing Images</label>
+                            <div class="wp-premium-image-grid">
+                                <div v-for="(image, index) in product_images" :key="image.id" class="wp-premium-image-item">
+                                    <img :src="'/' + image.image" alt="Product image">
+                                    <button @click="deleteImage(image, index)" class="wp-premium-delete-btn">
+                                        <i class="el-icon-delete"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th scope="col" class="px-4 py-3">Product name</th>
-                                <th scope="col" class="px-4 py-3">Category</th>
-                                <th scope="col" class="px-4 py-3">Brand</th>
-                                <th scope="col" class="px-4 py-3">Quantity</th>
-                                <th scope="col" class="px-4 py-3">Price</th>
-                                <th scope="col" class="px-4 py-3">Stock</th>
-                                <th scope="col" class="px-4 py-3">Publish</th>
-                                <th scope="col" class="px-4 py-3">
-                                    <span class="sr-only">Actions</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="product in products" :key="product.id" class="border-b dark:border-gray-700">
-                                <th scope="row"
-                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ product.title }}
-                                </th>
-                                <td class="px-4 py-3">{{ product.category.name }}</td>
-                                <td class="px-4 py-3">{{ product.brand.name }}</td>
-                                <td class="px-4 py-3">{{ product.quantity }}</td>
-                                <td class="px-4 py-3">{{ product.price }}</td>
-                                <td class="px-4 py-3">
-                                    <button v-if="!product.inStock" type="button"
-                                        class="text-green-900 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-4 focus:ring-green-100 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-green-200 dark:hover:bg-green-300 dark:focus:ring-green-300">In
-                                        Stock</button>
-                                    <button v-else type="button"
-                                        class="text-green-900 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-4 focus:ring-green-100 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-green-200 dark:hover:bg-green-300 dark:focus:ring-green-300">Out
-                                        of Stock</button>
 
-                                </td>
-                                <td class="px-4 py-3">
-                                    <button v-if="!product.published" type="button"
-                                        class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Published</button>
-                                    <button v-else type="button"
-                                        class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Draft</button>
-                                </td>
-                                <td class="px-4 py-3 flex items-center justify-end">
-
-                                    <button :id="`${product.id}-button`" :data-dropdown-toggle="`${product.id}`"
-                                        class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-                                        type="button">
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                                        </svg>
-                                    </button>
-                                    <div :id="`${product.id}`"
-                                        class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                            :aria-labelledby="`${product.id}-button`">
-
-                                            <li>
-                                                <a href="#" @click="openEditModal(product)"
-                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
-                                            </li>
-                                        </ul>
-                                        <div class="py-1">
-                                            <a href="#" @click="deleteProduct(product, index)"
-                                                class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="wp-premium-form-actions">
+                    <button type="button" @click="dialogVisible = false" class="wp-premium-btn wp-premium-btn-secondary">Cancel</button>
+                    <button type="submit" class="wp-premium-btn wp-premium-btn-primary">{{ editMode ? 'Update' : 'Add' }} Product</button>
                 </div>
-                <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
-                    aria-label="Table navigation">
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                        Showing
-                        <span class="font-semibold text-gray-900 dark:text-white">1-10</span>
-                        of
-                        <span class="font-semibold text-gray-900 dark:text-white">1000</span>
-                    </span>
-                    <ul class="inline-flex items-stretch -space-x-px">
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Previous</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">1</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">2</a>
-                        </li>
-                        <li>
-                            <a href="#" aria-current="page"
-                                class="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-blue-50 border border-primary-300 hover:bg-blue-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">3</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">...</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">100</a>
-                        </li>
-                        <li>
-                            <a href="#"
-                                class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <span class="sr-only">Next</span>
-                                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </section>
+            </form>
+        </el-dialog>
+    </div>
 </template>
+
+<style scoped>
+.wp-premium-dialog {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.wp-premium-form {
+    padding: 20px;
+}
+
+.wp-premium-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.wp-premium-form-group {
+    margin-bottom: 20px;
+}
+
+.wp-premium-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.wp-premium-input,
+.wp-premium-select,
+.wp-premium-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.wp-premium-textarea {
+    resize: vertical;
+}
+
+.wp-premium-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-checkbox-group {
+        flex-direction: row;
+        gap: 20px;
+    }
+}
+
+.wp-premium-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.wp-premium-checkbox input {
+    margin-right: 8px;
+}
+
+.wp-premium-upload .el-upload--picture-card {
+    border: 2px dashed #8c8f94;
+    border-radius: 4px;
+}
+
+.wp-premium-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+}
+
+.wp-premium-image-item {
+    position: relative;
+}
+
+.wp-premium-image-item img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-image-item img {
+        height: 100px;
+    }
+}
+.wp-premium-delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(255,255,255,0.8);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.wp-premium-form-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-form-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+}
+
+.wp-premium-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-btn {
+        width: auto;
+        margin-bottom: 0;
+    }
+}
+
+.wp-premium-btn-primary {
+    background-color: #2271b1;
+    color: white;
+}
+
+.wp-premium-btn-primary:hover {
+    background-color: #135e96;
+}
+
+.wp-premium-btn-secondary {
+    background-color: #f6f7f7;
+    color: #2c3338;
+}
+
+@media (min-width: 640px) {
+    .wp-premium-btn-secondary {
+        margin-right: 10px;
+    }
+}
+
+.wp-premium-btn-secondary:hover {
+    background-color: #f0f0f1;
+}
+
+/* Additional responsive styles */
+@media (max-width: 639px) {
+    .container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+
+    .mb-6 {
+        margin-bottom: 16px;
+    }
+
+    .overflow-x-auto {
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    .wp-premium-dialog {
+        padding: 16px;
+    }
+}
+</style>

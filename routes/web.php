@@ -10,15 +10,18 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 //user route 
 Route::get('/', [UserController::class, 'index'])->name('user.home');
-Route::get('/contact', [UserController::class, 'contact'])->name('user.contact');
+// Route::get('/contact', [UserController::class, 'contact'])->name('user.contact');
 Route::get('/about', [UserController::class, 'about'])->name('user.about');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/dashboard', function () {
     return Inertia::render('User/Index');
@@ -74,6 +77,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function() {
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     Route::put('/orders/update/{id}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('/orders/delete/{id}',[OrderController::class, 'delete'])->name('admin.orders.delete');
+
+    Route::get('/contact-messages', [ContactController::class, 'adminIndex'])->name('admin.contact-messages.index');
+    Route::delete('/contact-messages/{id}', [ContactController::class, 'destroy'])->name('admin.contact-messages.destroy');
 });
 
 require __DIR__.'/auth.php';

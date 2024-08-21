@@ -18,7 +18,7 @@ const navItems = computed(() => [
   { label: 'Home', route: route('user.home'), routeName: 'user.home' },
   { label: 'Products', route: route('products.index'), routeName: 'products.index' },
   { label: 'About', route: route('user.about'), routeName: 'user.about' },
-  { label: 'Contact', route: route('user.contact'), routeName: 'user.contact' },
+  { label: 'Contact', route: route('contact.index'), routeName: 'contact.index' },
 ])
 
 const isMobileMenuOpen = ref(false);

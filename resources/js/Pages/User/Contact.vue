@@ -1,15 +1,19 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import UserLayout from './Layouts/UserLayout.vue'
 import { ref } from 'vue';
 
-const name = ref('');
-const email = ref('');
-const message = ref('');
+const form = useForm({
+  name: '',
+  email: '',
+  message: '',
+});
 
 const submitForm = () => {
-  // Handle form submission logic here
-  console.log('Form submitted:', { name: name.value, email: email.value, message: message.value });
+  form.post(route('contact.store'), {
+    preserveScroll: true,
+    onSuccess: () => form.reset(),
+  });
 };
 </script>
 
@@ -52,19 +56,22 @@ const submitForm = () => {
               <form @submit.prevent="submitForm" class="space-y-6">
                 <div>
                   <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                  <input v-model="name" type="text" id="name" name="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                  <input v-model="form.name" type="text" id="name" name="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                  <div v-if="form.errors.name" class="text-red-500 text-sm mt-1">{{ form.errors.name }}</div>
                 </div>
                 <div>
                   <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                  <input v-model="email" type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                  <input v-model="form.email" type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                  <div v-if="form.errors.email" class="text-red-500 text-sm mt-1">{{ form.errors.email }}</div>
                 </div>
                 <div>
                   <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-                  <textarea v-model="message" id="message" name="message" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"></textarea>
+                  <textarea v-model="form.message" id="message" name="message" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"></textarea>
+                  <div v-if="form.errors.message" class="text-red-500 text-sm mt-1">{{ form.errors.message }}</div>
                 </div>
                 <div>
-                  <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
-                    Send Message
+                  <button type="submit" :disabled="form.processing" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    {{ form.processing ? 'Sending...' : 'Send Message' }}
                   </button>
                 </div>
               </form>

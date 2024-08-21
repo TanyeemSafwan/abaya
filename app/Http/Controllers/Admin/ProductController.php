@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -100,9 +101,23 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::findOrFail($id)->delete();
+        $product = Product::findOrFail($id);
 
-        return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
+        // Delete related product images
+        foreach ($product->product_images as $image) {
+            // Delete the image file from storage
+            Storage::delete($image->image);
+            $image->delete();
+        }
+
+        // Delete related cart items and order items
+        $product->orderItems()->delete();
+        $product->cartItems()->delete();
+
+        // Delete the product
+        $product->delete();
+
+        return redirect()->route('admin.products.index')->with('success', 'Product and related items deleted successfully.');
 
     }
 }

@@ -57,7 +57,7 @@ class CheckoutController extends Controller
                 $order->phone = $request->address['phone'];
                 $order->name = $request->address['name'];
                 $order->address_1 = $request->address['address1'];
-                $order->address_1 = $request->address['city'];
+                $order->city = $request->address['city'];
                 $order->total_price = $request->total;
                 $order->specialInstructions = $request->address['specialInstructions'];
                 $order->created_by = $user->id;
