@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import UserLayout from './User/Layouts/UserLayout.vue';
 import Products from './User/Components/Products.vue';
 
@@ -44,6 +44,9 @@ const paginationRange = computed(() => {
 </script>
 
 <template>
+    <Head>
+        <title>Search</title>
+    </Head>
     <UserLayout>
         <div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
             <div class="container mx-auto px-4 py-16">

@@ -97,7 +97,7 @@ const submit = async() => {
 
 <template>
   <Head>
-    <title>{{ 'Cart List | Abaya' }}</title>
+    <title>{{ 'Cart List' }}</title>
   </Head>
   <UserLayout>
     <section class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen py-12">

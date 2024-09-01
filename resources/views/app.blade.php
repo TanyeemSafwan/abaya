@@ -4,8 +4,13 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+
         <meta name="description" content="{{ $description ?? 'An ecommerce platform in Bangladesh for islamic clothing, focusing in Abaya which is made from imported Zoom fabric.' }}">
-        <meta name="keywords" content="{{ $keywords ?? 'Abaya, Dubai, Ismalic, Clothing, Brand, Ecommerce, Hijab, Niqab, Borka, Bangladesh' }}">
+        <meta name="keywords" content="{{ $keywords ?? 'Abaya, Dubai, Islamic, Clothing, Brand, Ecommerce, Hijab, Niqab, Borka, Bangladesh' }}">
+
+        <!-- Favicon -->
+        <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon"/>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

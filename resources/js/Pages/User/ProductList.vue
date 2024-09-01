@@ -84,7 +84,7 @@ const changeSort = (newSort) => {
 
 <template>
   <Head>
-    <title>Discover Our Collection | Abaya</title>
+    <title>Discover Our Collection</title>
   </Head>
   <UserLayout>
     <div class="bg-gradient-to-r from-gray-50 to-gray-100 min-h-screen">
@@ -138,7 +138,7 @@ const changeSort = (newSort) => {
                       <Disclosure as="div" class="border-t border-gray-200 px-4 py-6" v-slot="{ open }">
                         <h3 class="-mx-2 -my-3 flow-root">
                           <DisclosureButton class="flex w-full items-center justify-between bg-white px-2 py-3 text-gray-400 hover:text-gray-500">
-                            <span class="font-medium text-gray-900">Brands</span>
+                            <span class="font-medium text-gray-900">Brand</span>
                             <span class="ml-6 flex items-center">
                               <PlusIcon v-if="!open" class="h-5 w-5" aria-hidden="true" />
                               <MinusIcon v-else class="h-5 w-5" aria-hidden="true" />
@@ -254,7 +254,7 @@ const changeSort = (newSort) => {
                 <h3 class="-my-3 flow-root">
                   <DisclosureButton
                     class="flex w-full items-center justify-between bg-white py-3 text-sm text-gray-400 hover:text-gray-500">
-                    <span class="font-medium text-gray-900">Brands</span>
+                    <span class="font-medium text-gray-900">Fabric Type</span>
                     <span class="ml-6 flex items-center">
                       <PlusIcon v-if="!open" class="h-5 w-5" aria-hidden="true" />
                       <MinusIcon v-else class="h-5 w-5" aria-hidden="true" />

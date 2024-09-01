@@ -23,6 +23,7 @@ Route::get('/search', [SearchController::class, 'index'])->name('search');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
+
 Route::get('/dashboard', function () {
     return Inertia::render('User/Index');
 })->middleware(['auth', 'verified'])->name('dashboard');

@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/vue3';
 
 <template>
   <Head>
-    <title>About | Abaya</title>
+    <title>About</title>
   </Head>
   <UserLayout>
     <!-- Hero Section -->
@@ -131,8 +131,8 @@ import { Head } from '@inertiajs/vue3';
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl font-extrabold mb-4">Our Commitment to You</h2>
         <p class="text-xl mb-8">We're dedicated to providing you with the highest quality abayas, exceptional customer service, and a seamless shopping experience.</p>
-        <a href="#" class="inline-block bg-white text-emerald-700 font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition duration-300">
-          Shop Now
+        <a href="https://www.facebook.com/abayadubaibd" target="_blank" class="inline-block bg-white text-emerald-700 font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition duration-300">
+          Visit Our Facebook Page
         </a>
       </div>
     </section>

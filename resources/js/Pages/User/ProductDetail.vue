@@ -36,7 +36,7 @@ const activeImage = ref(`/${props.productImages[0]?.image ? props.productImages[
 
 <template>
   <Head>
-    <title>{{ `${product.title} | Abaya` }}</title>
+    <title>{{ `${product.title}` }}</title>
   </Head>
   <UserLayout>
     <div class="font-sans bg-gray-100">
@@ -85,7 +85,7 @@ const activeImage = ref(`/${props.productImages[0]?.image ? props.productImages[
             <h3 class="text-2xl font-bold text-gray-800 mb-6">Product Information</h3>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div class="py-3 sm:py-4 border-b border-gray-200 sm:border-b-0 sm:border-r">
-                <dt class="text-sm font-medium text-gray-500">Cloth Type</dt>
+                <dt class="text-sm font-medium text-gray-500">Fabric Type</dt>
                 <dd class="mt-1 text-lg font-semibold text-indigo-600">{{ brand.name }}</dd>
               </div>
               <div class="py-3 sm:py-4 border-b border-gray-200">

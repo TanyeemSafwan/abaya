@@ -22,7 +22,7 @@ const customers = [
 
 <template>
   <Head>
-    <title>Home | Abaya</title>
+    <title>Home</title>
   </Head>
   <UserLayout>
     <!-- Hero Section -->

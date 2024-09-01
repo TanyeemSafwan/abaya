@@ -132,75 +132,72 @@ const deleteOrder = (order, index) => {
 </script>
 <template>
   <AdminLayout>
-    <el-dialog v-model="dialogVisible" title="Edit Order" width="30%"
-        :before-close="handleClose">
-
-
-        <form class="max-w-md mx-auto" @submit.prevent="updateOrder()">
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model="name" type="text" name="floating_title" id="floating_title"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_email"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Name</label>
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model="address_1" type="text" name="floating_title" id="floating_title"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_email"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Address</label>
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model="total_price" type="text" name="floating_price" id="floating_price"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_price"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Total</label>
-            </div>
-            <div class="relative z-0 w-full mb-5 group">
-                <input v-model="phone" type="number" name="quantity" id="floating_quantity"
-                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" " required />
-                <label for="floating_quantity"
-                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Phone</label>
-            </div>
-
-
-            <form class="max-w-sm mb-4">
-                <label for="categories" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select
-                    Status</label>
-                <select id="categories" v-model="status"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option v-for="status in allStatus" :key="status.id" :value="status.name">{{ status.name }}
-                    </option>
-                </select>
-            </form>
-
-            <div class="grid md:grid-cols-2 md:gap-6 mb-5">
-                <div class="relative z-0 w-full mb-6 group">
-                    <div v-for="product in productsOrdered" :key="product.id">
-                        {{ product.name }}: {{ product.quantity }}items -- {{ product.size }} size
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-nowrap mb-8 ">
-                    <div v-for="(pimage, index) in product_images" :key="pimage.id" class="relative w-32 h-32 ">
-                        <img class="w-24 h-20 rounded" :src="`/${pimage.image}`" alt="">
-                        <span
-                            class="absolute top-0 right-8 transform -translate-y-1/2 w-3.5 h-3.5 bg-red-400 border-2 border-white dark:border-gray-800 rounded-full">
-                            <span @click="deleteImage(pimage, index)"
-                                class="text-white text-xs font-bold absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hover:cursor-pointer">x</span>
-                        </span>
-                    </div>
-            </div>
-
-            <button type="submit"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-        </form>
-
-    </el-dialog>
+    <el-dialog v-model="dialogVisible" title="" width="50%" :before-close="handleClose">
+  <div class="bg-gradient-to-r from-blue-100 to-purple-100 p-6 rounded-lg shadow-xl">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Edit Order Details</h2>
+    
+    <form class="space-y-6" @submit.prevent="updateOrder()">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+          <input v-model="name" type="text" id="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        </div>
+        
+        <div class="space-y-2">
+          <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+          <input v-model="address_1" type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        </div>
+        
+        <div class="space-y-2">
+          <label for="total" class="block text-sm font-medium text-gray-700">Total</label>
+          <input v-model="total_price" type="text" id="total" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        </div>
+        
+        <div class="space-y-2">
+          <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+          <input v-model="phone" type="tel" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        </div>
+      </div>
+      
+      <div class="space-y-2">
+        <label for="status" class="block text-sm font-medium text-gray-700">Order Status</label>
+        <select v-model="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <option v-for="status in allStatus" :key="status.id" :value="status.name">{{ status.name }}</option>
+        </select>
+      </div>
+      
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-2">Ordered Products</h3>
+        <ul class="space-y-2">
+          <li v-for="product in productsOrdered" :key="product.id" class="flex justify-between items-center">
+            <span>{{ product.name }}</span>
+            <span class="text-sm text-gray-600">{{ product.quantity }} items - {{ product.size }} size</span>
+          </li>
+        </ul>
+      </div>
+      
+      <div v-if="product_images && product_images.length" class="space-y-2">
+        <h3 class="text-lg font-semibold">Product Images</h3>
+        <div class="flex flex-wrap gap-4">
+          <div v-for="(pimage, index) in product_images" :key="pimage.id" class="relative group">
+            <img class="w-24 h-24 object-cover rounded-lg shadow-md" :src="`/${pimage.image}`" alt="Product image">
+            <button @click="deleteImage(pimage, index)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end">
+        <button type="submit" class="px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition">
+          Update Order
+        </button>
+      </div>
+    </form>
+  </div>
+</el-dialog>
     <div v-if="props.orders.data.length">
       <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -230,11 +227,11 @@ const deleteOrder = (order, index) => {
                                 <td class="px-4 py-3">{{ order.created_at }}</td>
                                 <td class="px-4 py-3">
                                     <button v-if="order.status === 'Pending'" type="button"
-                                        class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Pending</button>
+                                        class="focus:outline-none text-white bg-yellow-500 hover:bg-yellow-500 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:focus:ring-green-800">Pending</button>
                                         <button v-else-if="order.status === 'In Progress'" type="button"
-                                        class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">In Progress</button>
+                                        class="focus:outline-none text-white bg-blue-500 hover:bg-blue-500 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-500 dark:hover:bg-blue-500 dark:focus:ring-green-800">In Progress</button>
                                         <button v-else-if="order.status === 'Cancelled'" type="button"
-                                        class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">Cancelled</button>
+                                        class="focus:outline-none text-white bg-red-500 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-500 dark:hover:bg-red-500 dark:focus:ring-red-800">Cancelled</button>
                                         <button v-else type="button"
                                         class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Delivered</button>
                                 </td>

@@ -1,4 +1,7 @@
 <template>
+  <Head>
+    <title>Order History</title>
+  </Head>
   <UserLayout>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">Order History</h1>
@@ -90,6 +93,7 @@
 </template>
 
 <script setup>
+import { Head } from '@inertiajs/vue3';
 import UserLayout from './Layouts/UserLayout.vue';
 import { ref, computed, onMounted } from 'vue';
 import { Chart, registerables } from 'chart.js';

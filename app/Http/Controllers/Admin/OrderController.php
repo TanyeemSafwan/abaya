@@ -45,7 +45,9 @@ class OrderController extends Controller
 
     public function delete($id)
     {
-        $order = Order::findOrFail($id)->delete();
+        $order = Order::findOrFail($id);
+        $order->order_items()->delete();
+        $order->delete();
 
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
 
